@@ -1,0 +1,20 @@
+NodeJS 는 실시간 기능 구현 시에 좋다. 구현하기 매우 쉽다.
+
+P2P, WebRTC를 활용한 유저 간 화상통신
+웹소켓을 활용해서 채팅방 생성, 개인 메세지 기능 구현
+
+Requirements
+ExpressJS, app.get(), Pug, (req, res) => / package.json / nodemon
+바닐라 JS 로 크롬 앱 만들기 => JS를 활용해서 HTML에서 무언가를 추가하고 삭제하는 것에 익숙해지기.
+ex) document.querySelector, document.createElement, title.innerText
+
+#2 Server Setup
+1) npm init -y => package.json 생성
+2) touch README.md => README 파일 생성
+3) npm i nodemon -D => 노드몬 라이브러리 설치
+4) babel.config.json 과 nodemon.json 생성
+5) server.js 생성
+6) npm i @babel/core @babel/cli @babel/node @babel/preset-env -D => 바벨 설치
+7) npm i express
+8) npm i pug
+
