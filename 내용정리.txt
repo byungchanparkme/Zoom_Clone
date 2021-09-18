@@ -18,3 +18,28 @@ ex) document.querySelector, document.createElement, title.innerText
 7) npm i express
 8) npm i pug
 
+# 20210917
+Q)
+1. node package manager 로 바벨 설치 시 -D 를 붙이는 이유는?
+2. 바벨은 무엇이며, 바벨 이용 시 왜 이렇게 많은 라이브러리들이 요구되는가?
+   (babel/core, babel/cli, babel/node, babel/preset-env)
+ans) 바벨은 자바스크립트 트랜스파일러 (우리가 작성한 코드를 NodeJS 런타임이 실행 가능한 형태로 변환해주는 것)
+@babel/core : 바벨의 핵심 패키지
+@babel/cli : 개발 의존성으로 바벨 커맨드 라인 도구 => 설치 이후 터미널에서 babel 커맨드로 자바스크립트 코드를 transpile할 수 있음.
+@babel/preset-env : 바벨 사전 설정값 (ES2015 이상의 최신 자바스크립트 문법으로 작성된 코드 해석 가능)
+@babel/node : 코드를 transpile 후 곧바로 실행할 수 있도록 해 줌.
+
+3. npm run dev 명령어를 입력하고 칠 시, nodemon 실행 => nodemon.json 파일 내 스크립트 실행 => babel-node 로 server.js 파일 실행해서 코드 트랜스파일 동시에 서버 오픈.
+
+출처 : https://www.daleseo.com/js-babel-node/ 
+
+* Frontend Setup
+Pug 로 view engine 을 설정하고 
+Express 에 template 이 어디 있는지 지정해주고
+public url 을 생성해서 유저에게 파일을 공유해주고
+그리고 home.pug를 render 해주는 route handler 를 만들었음.
+
+노드몬 : 우리의 프로젝트를 살펴보고 변경 사항이 있을 시 서버를 재시작해주는 프로그램 (서버 자동 재구동 프로그램)
+
+* 퍼그 공부하기
+출처 : https://velog.io/@1703979/TIL-29
