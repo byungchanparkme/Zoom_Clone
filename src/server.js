@@ -21,18 +21,24 @@ const server = http.createServer(app);
 // WebSocket 서버 (같은 서버에서 http와 WebSocket 모두 작동)
 const wss = new WebSocket.Server({server});
 
+const onSocketClose = () => {
+    console.log("Disconnected from the Browser ❌");
+}
+
+// fake database
+const sockets = [];
+
 // web socket을 이용해서 새로운 connection 을 기다림
 // socket : 연결된 브라우저
 wss.on('connection', (socket) => {
+    sockets.push(socket);
     console.log("Connected to the Server ✅");
-    socket.on("close", () => {
-        console.log("Disconnected from the Browser ❌");
-    });
+    socket.on("close", onSocketClose);
+    
     socket.on("message", (message) => {
-        console.log("New Message from Broswer", message);
+        // 서로 다른 브라우저 간 메세지 주고받을 수 있음.
+        sockets.forEach(aSocket => aSocket.send(message.toString()));
     });
-    // Backend 에서 Frontend 로 메세지 전송
-    socket.send('hello!');
 });
 
 server.listen(3000, handleListen);
