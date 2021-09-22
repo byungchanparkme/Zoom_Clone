@@ -1,5 +1,5 @@
 import express from "express";
-import WebSocket from "ws";
+import SocketIO from "socket.io";
 import http from "http";
 
 const app = express();
@@ -16,8 +16,20 @@ app.get("/*", (req, res) => res.redirect("/"));
 const handleListen = () => console.log(`Listening on ws://localhost:3000`);
 
 // http 서버
-const server = http.createServer(app);
+const httpServer = http.createServer(app);
+const wsServer = SocketIO(httpServer);
 
+// Back-end 에서 socket.io 와 연결 준비 완료
+wsServer.on("connection", socket => {
+    socket.on("enter_room", (roomName, done) => {
+        console.log(roomName);
+        setTimeout(() => {
+            done("Hello from the Backend");
+        }, 5000);   
+    });
+})
+
+/*
 // WebSocket 서버 (같은 서버에서 http와 WebSocket 모두 작동)
 const wss = new WebSocket.Server({server});
 
@@ -38,6 +50,7 @@ wss.on('connection', (socket) => {
     
     socket.on("message", (msg) => {
         const message = JSON.parse(msg);
+        console.log(message);
         switch(message.type) {
             case "new_message":
                 sockets.forEach(aSocket => aSocket.send(`${socket.nickname} : ${message.payload}`));
@@ -46,6 +59,6 @@ wss.on('connection', (socket) => {
         }
     });
 });
-
-server.listen(3000, handleListen);
+*/
+httpServer.listen(3000, handleListen);
 
