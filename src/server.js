@@ -21,11 +21,22 @@ const wsServer = SocketIO(httpServer);
 
 // Back-end 에서 socket.io 와 연결 준비 완료
 wsServer.on("connection", socket => {
-    socket.on("enter_room", (roomName, done) => {
-        console.log(roomName);
-        setTimeout(() => {
-            done("Hello from the Backend");
-        }, 5000);   
+    socket.on("enter_room", (roomName, showRoom) => {
+        socket.join(roomName);
+        showRoom(roomName);   
+        // "welcome" Event 를 방금 참가한 방 안에 있는 모든 사람에게 emit
+        socket.to(roomName).emit("welcome");
+    });
+    
+    socket.on("new_message", (msg, room, showMessage) => {
+        // 방 안에 있고, 새로운 메세지 보낸 소켓 제외한 나머지에게
+        socket.to(room).emit("new_message", msg);
+        showMessage(msg);
+    });
+
+    socket.on("disconnecting", reason => {
+        // socket.rooms 는 Set 이어서 iterable (반복가능한) 객체임.
+        socket.rooms.forEach(room => socket.to(room).emit("bye"));
     });
 })
 
