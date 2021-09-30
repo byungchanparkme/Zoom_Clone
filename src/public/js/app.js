@@ -1,6 +1,9 @@
 // io function 은 알아서 socket.io 를 실행하고 있는 서버를 알아서 찾음.
 const socket = io();
 
+const login = document.getElementById("login");
+const loginForm = login.querySelector("form");
+
 const welcome = document.getElementById("welcome");
 const roomForm = welcome.querySelector("form");
 
@@ -12,6 +15,7 @@ const message = document.getElementById("message");
 // roomName 을 전역 변수로 선언 (어디서든 접근 가능하도록)
 let roomName;
 
+welcome.hidden = true;
 room.hidden = true;
 
 function showRoom(roomName) {
@@ -24,6 +28,13 @@ function showRoom(roomName) {
 function showMessage(msg) {
     const item = document.createElement('li');
     item.textContent = msg;
+    messageList.appendChild(item);
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function showMessageWithNickname(nickname, msg) {
+    const item = document.createElement('li');
+    item.textContent = `${nickname} : ${msg}`;
     messageList.appendChild(item);
     window.scrollTo(0, document.body.scrollHeight);
 }
@@ -52,15 +63,33 @@ const handleMessageSubmit = event => {
     input.value = "";
 }
 
+// Login 버튼 클릭 시 콜백 함수 동작
+const handleLoginSubmit = event => {
+    event.preventDefault();
+    const input = loginForm.querySelector("input");
+    const value = input.value;
+    // 입력한 nickname 값을 서버에 전달
+    socket.emit("user_login", { nickname: value }, (nickname) => {
+        console.log(nickname);  
+    });
+    input.value = '';
+    // loginForm disappears
+    login.hidden = true;
+    // enterRoomForm appears
+    welcome.hidden = false;
+}
+
 roomForm.addEventListener("submit", handleRoomSubmit);
 messageForm.addEventListener("submit", handleMessageSubmit);
+loginForm.addEventListener("submit", handleLoginSubmit);
 
-socket.on("welcome", () => {
-    showMessage("someone joined!");
+
+socket.on("welcome", (user) => {
+    showMessage(`${user} joined!`);
 });
-socket.on("bye", () => {
-    showMessage("someone left ㅠㅠ");
+socket.on("bye", (user) => {
+    showMessage(`${user} left ㅠㅠ`);
 });
-socket.on("new_message", (msg) => {
-    showMessage(msg);
+socket.on("new_message", (nickname, msg) => {
+    showMessageWithNickname(nickname, msg);
 });

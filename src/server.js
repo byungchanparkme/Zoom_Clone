@@ -21,22 +21,31 @@ const wsServer = SocketIO(httpServer);
 
 // Back-end 에서 socket.io 와 연결 준비 완료
 wsServer.on("connection", socket => {
+    socket.nickname = "Anon";
+
+    // 프론트에서 Login 버튼 클릭 시 user_login 이벤트 감지 후 콜백 함수 실행 
+    socket.on("user_login", (userInfo, showNickname) => {
+        socket.nickname = userInfo.nickname;
+        showNickname(socket.nickname);
+    });
+    
     socket.on("enter_room", (roomName, showRoom) => {
         socket.join(roomName);
         showRoom(roomName);   
         // "welcome" Event 를 방금 참가한 방 안에 있는 모든 사람에게 emit
-        socket.to(roomName).emit("welcome");
+        socket.to(roomName).emit("welcome", socket.nickname);
     });
     
     socket.on("new_message", (msg, room, showMessage) => {
+        console.log(socket.nickname);
         // 방 안에 있고, 새로운 메세지 보낸 소켓 제외한 나머지에게
-        socket.to(room).emit("new_message", msg);
+        socket.to(room).emit("new_message", socket.nickname, msg);
         showMessage(msg);
     });
 
     socket.on("disconnecting", reason => {
         // socket.rooms 는 Set 이어서 iterable (반복가능한) 객체임.
-        socket.rooms.forEach(room => socket.to(room).emit("bye"));
+        socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname));
     });
 })
 
