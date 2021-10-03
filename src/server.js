@@ -19,21 +19,49 @@ const handleListen = () => console.log(`Listening on ws://localhost:3000`);
 const httpServer = http.createServer(app);
 const wsServer = SocketIO(httpServer);
 
+function publicRooms() {
+    const { 
+      sockets: { 
+        adapter: { 
+          sids, rooms 
+        }
+      }
+    } = wsServer;
+
+    const publicRooms = [];
+    rooms.forEach((_, key) => {
+        if (sids.get(key) === undefined) {
+            publicRooms.push(key);
+        }
+    });
+
+    return publicRooms;
+}
+
+function countRoom(roomName) {
+    return wsServer.sockets.adapter.rooms.get(roomName)?.size;
+}
+
 // Back-end 에서 socket.io 와 연결 준비 완료
 wsServer.on("connection", socket => {
     socket.nickname = "Anon";
 
+    socket.onAny(event => {
+      publicRooms();
+    });
+
     // 프론트에서 Login 버튼 클릭 시 user_login 이벤트 감지 후 콜백 함수 실행 
-    socket.on("user_login", (userInfo, showNickname) => {
+    socket.on("user_login", (userInfo) => {
+        // 프론트에서 등록한 nickname 을 socket 객체의 nickname 프로퍼티에 저장
         socket.nickname = userInfo.nickname;
-        showNickname(socket.nickname);
     });
     
     socket.on("enter_room", (roomName, showRoom) => {
         socket.join(roomName);
         showRoom(roomName);   
         // "welcome" Event 를 방금 참가한 방 안에 있는 모든 사람에게 emit
-        socket.to(roomName).emit("welcome", socket.nickname);
+        socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName));
+        wsServer.sockets.emit('room_change', publicRooms());
     });
     
     socket.on("new_message", (msg, room, showMessage) => {
@@ -43,10 +71,16 @@ wsServer.on("connection", socket => {
         showMessage(msg);
     });
 
-    socket.on("disconnecting", reason => {
+    // socket 이 방을 떠나기 바로 직전에 발생.
+    socket.on("disconnecting", () => {
         // socket.rooms 는 Set 이어서 iterable (반복가능한) 객체임.
-        socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname));
+        socket.rooms.forEach(room => socket.to(room).emit("bye", socket.nickname, countRoom(roomName) - 1));
     });
+
+    // socket 이 방을 떠난 후 발생.
+    socket.on("disconnect", () => {
+        wsServer.sockets.emit('room_change', publicRooms());
+    })
 })
 
 /*
